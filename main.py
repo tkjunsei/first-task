@@ -24,11 +24,12 @@ class Character:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        # to_goalがα、from_eneがβの値
         self.to_goal = 100
         self.from_ene = 1
         self.rect = pygame.Rect(self.x, self.y, CELL_SIZE, CELL_SIZE)
         self.path = []  # プレイヤーの軌跡を保存するリスト
-        self.image = pygame.image.load("./player.png")
+        self.image = pygame.image.load("./asset/player.png")
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
     
     def move(self, goal_x, goal_y, enemies):
@@ -60,11 +61,9 @@ class Character:
             dx /= distance
             dy /= distance
 
-        # プレイヤーを移動
         self.x += dx * 5
         self.y += dy * 5
 
-        # 画面外に出ないように制限
         self.x = max(0, min(self.x, WIDTH - CELL_SIZE))
         self.y = max(0, min(self.y, HEIGHT - CELL_SIZE))
 
@@ -73,46 +72,37 @@ class Character:
 
     def draw(self, screen):
         screen.blit(self.image, self.rect.topleft)
-        # pygame.draw.rect(screen, GREEN, self.rect)
-
-# 敵キャラクタークラス
+        
 class Enemy:
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, self.y, CELL_SIZE, CELL_SIZE)
-        self.image = pygame.image.load("./monster.png")
+        self.image = pygame.image.load("./asset/monster.png")
         self.image = pygame.transform.scale(self.image, (CELL_SIZE, CELL_SIZE))
 
     
     def move_randomly(self):
         self.x += random.choice([-2, 0, 2]) * 4
         self.y += random.choice([-2, 0, 2]) * 4
-
-        # 画面外に出ないように制限
         self.x = max(0, min(self.x, WIDTH - CELL_SIZE))
         self.y = max(0, min(self.y, HEIGHT - CELL_SIZE))
 
         self.rect.topleft = (self.x, self.y)
 
     def draw(self, screen):
-        # pygame.draw.rect(screen, RED, self.rect)
         screen.blit(self.image, self.rect.topleft)
 
-
-# ゲームの設定
 start_x, start_y = 50, 50
 goal_x, goal_y = WIDTH - 70, HEIGHT - 70
 
 player = Character(start_x, start_y)
 enemies = [Enemy(random.randint(100, WIDTH - 100), random.randint(100, HEIGHT - 100)) 
-           for _ in range(0)]
-
-
-goal = pygame.image.load("./goal.png")
+           for _ in range(20)]
+goal = pygame.image.load("./asset/goal.png")
 goal = pygame.transform.scale(goal, (CELL_SIZE, CELL_SIZE))
 
-# ゲームループ
+
 running = True
 while running:
     screen.fill(BLACK)
@@ -121,26 +111,20 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    # プレイヤーの移動
     player.move(goal_x, goal_y, enemies)
     
-    # 敵キャラクターの移動
     for enemy in enemies:
         enemy.move_randomly()
     
-    # プレイヤーと敵キャラの衝突判定
     for enemy in enemies:
         if player.rect.colliderect(enemy.rect):
             print("Game Over!")
             running = False
 
-    # プレイヤーがゴールに到達した場合
     if player.x >= goal_x - CELL_SIZE and player.y >= goal_y - CELL_SIZE:
         print("You Win!")
         running = False
 
-    # 描画
-    # pygame.draw.rect(screen, WHITE, (goal_x, goal_y, CELL_SIZE, CELL_SIZE))  # ゴール地点
     screen.blit(goal, (goal_x, goal_y, CELL_SIZE, CELL_SIZE))
 
     player.draw(screen)
@@ -150,18 +134,13 @@ while running:
     pygame.display.flip()
     clock.tick(FPS)
 
-# ゲーム終了時に軌跡を画像として保存
 if player.path:
-    # 新しい画像を作成
     path_image = pygame.Surface((WIDTH, HEIGHT))
     path_image.fill(BLACK)
-    
-    # 軌跡を描画
     for (px, py) in player.path:
         pygame.draw.rect(path_image, GREEN, (px, py, CELL_SIZE, CELL_SIZE))
     
-    # 画像として保存
-    pygame.image.save(path_image, "player_path.png")
+    pygame.image.save(path_image, "./result/player_path.png")
     print("Player path image saved as 'player_path.png'.")
 
 pygame.quit()
